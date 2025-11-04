@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crop Recommendation System 🌱</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-green: #28a745;
+      --light-green: #e3f9e5;
+      --dark-green: #1e7e34;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #e3f9e5, #d4f1f4, #c8e6c9);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+    
+    body.dark-mode {
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      color: #e4e4e4;
+    }
+    
+    .dark-mode .card, .dark-mode .form-control, .dark-mode .navbar {
+      background-color: #1f1f1f !important;
+      color: #e4e4e4 !important;
+      border-color: #444 !important;
+    }
+    
+    .navbar {
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .dark-mode-toggle {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: white;
+      transition: transform 0.3s;
+    }
+    
+    .dark-mode-toggle:hover {
+      transform: rotate(20deg);
+    }
+    
+    h1 {
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-control, .form-select {
+      border-radius: 12px;
+      border: 2px solid #ddd;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-green);
+      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .btn-lg {
+      border-radius: 12px;
+      padding: 12px 30px;
+      transition: all 0.3s;
+    }
+    
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+    }
+    
+    .result-card {
+      margin: 30px auto;
+      border-radius: 20px;
+      box-shadow: 0px 8px 25px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease-in-out;
+      animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .result-card:hover {
+      transform: scale(1.02);
+    }
+    
+    .confidence-badge {
+      font-size: 1.2rem;
+      padding: 10px 20px;
+      border-radius: 25px;
+      display: inline-block;
+      margin: 10px 0;
+    }
+    
+    .crop-info-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: rgba(40, 167, 69, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-green);
+    }
+    
+    .top-3-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    
+    .top-crop-card {
+      flex: 1;
+      min-width: 280px;
+      max-width: 350px;
+      border-radius: 15px;
+      transition: all 0.3s;
+    }
+    
+    .top-crop-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .rank-badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+    .rank-2 { background: linear-gradient(135deg, #C0C0C0, #808080); }
+    .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); }
+    
+    .tooltip-icon {
+      cursor: help;
+      color: var(--primary-green);
+      margin-left: 5px;
+    }
+    
+    .error-alert {
+      animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    #sitePreloader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top:0; left:0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      z-index: 10000;
+      flex-direction: column;
+    }
+    
+    #sitePreloader i {
+      font-size: 4rem;
+      color: #28a745;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    #loaderOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    
+    #loaderOverlay i {
+      font-size: 4rem;
+      color: green;
+      animation: bounce 1s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .progress-container {
+      width: 80%;
+      max-width: 400px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <!--======================= Site Preloader ===============================-->
+  <div id="sitePreloader">
+    <i class="fas fa-seedling"></i>
+    <p class="mt-3 fw-bold text-success">Loading Crop Recommendation System...</p>
+  </div>
+
+  <!--======================= Navbar ===============================-->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/">
+        <i class="fas fa-leaf"></i> Crop Recommendation System
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/history"><i class="fas fa-history"></i> History</a>
+          </li>
+          <li class="nav-item">
+            <span class="nav-link dark-mode-toggle" onclick="toggleDarkMode()">
+              <i class="fas fa-moon" id="darkModeIcon"></i>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!--======================= Error Alert ===============================-->
+  {% if error %}
+  <div class="container mt-4">
+    <div class="alert alert-danger alert-dismissible fade show error-alert" role="alert">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Error!</strong> {{ error }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+  {% endif %}
+
+  <!--======================= Form ===============================-->
+  <div class="container my-5 p-4 bg-white rounded-4 shadow">
+    <h1 class="text-center text-success mb-4">
+      <i class="fas fa-tractor"></i> Crop Recommendation System 🌾
+    </h1>
+    <p class="text-center text-muted mb-4">
+      Enter your soil and climate parameters to get intelligent crop recommendations powered by Machine Learning
+    </p>
+    
+    <form id="cropForm" action="/predict" method="POST">
+      <div class="row g-3">
+        <!-- Nitrogen -->
+        <div class="col-md-4">
+          <label for="Nitrogen" class="form-label">
+            Nitrogen (N)
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Nitrogen content in soil (0-140 kg/ha)"></i>
+          </label>
+          <input type="number" step="any" id="Nitrogen" name="Nitrogen" class="form-control" 
+                 min="0" max="140" placeholder="e.g., 90" required>
+        </div>
+
+        <!-- Phosphorus -->
+        <div class="col-md-4">
+          <label for="Phosphorus" class="form-label">
+            Phosphorus (P)
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Phosphorus content in soil (5-145 kg/ha)"></i>
+          </label>
+          <input type="number" step="any" id="Phosphorus" name="Phosphorus" class="form-control" 
+                 min="5" max="145" placeholder="e.g., 42" required>
+        </div>
+
+        <!-- Potassium -->
+        <div class="col-md-4">
+          <label for="Potassium" class="form-label">
+            Potassium (K)
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Potassium content in soil (5-205 kg/ha)"></i>
+          </label>
+          <input type="number" step="any" id="Potassium" name="Potassium" class="form-control" 
+                 min="5" max="205" placeholder="e.g., 43" required>
+        </div>
+
+        <!-- Temperature -->
+        <div class="col-md-4">
+          <label for="Temperature" class="form-label">
+            Temperature (°C)
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Average temperature (8.825-43.675°C)"></i>
+          </label>
+          <input type="number" step="any" id="Temperature" name="Temperature" class="form-control" 
+                 min="8.825" max="43.675" placeholder="e.g., 25.5" required>
+        </div>
+
+        <!-- Humidity -->
+        <div class="col-md-4">
+          <label for="Humidity" class="form-label">
+            Humidity (%)
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Relative humidity (14.258-99.981%)"></i>
+          </label>
+          <input type="number" step="any" id="Humidity" name="Humidity" class="form-control" 
+                 min="14.258" max="99.981" placeholder="e.g., 80.5" required>
+        </div>
+
+        <!-- pH -->
+        <div class="col-md-4">
+          <label for="Ph" class="form-label">
+            pH Value
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Soil pH level (3.505-9.935)"></i>
+          </label>
+          <input type="number" step="any" id="Ph" name="Ph" class="form-control" 
+                 min="3.505" max="9.935" placeholder="e.g., 6.5" required>
+        </div>
+
+        <!-- Rainfall -->
+        <div class="col-md-12">
+          <label for="Rainfall" class="form-label">
+            Rainfall (mm)
+            <i class="fas fa-info-circle tooltip-icon" data-bs-toggle="tooltip" 
+               title="Annual rainfall (20.211-298.56 mm)"></i>
+          </label>
+          <input type="number" step="any" id="Rainfall" name="Rainfall" class="form-control" 
+                 min="20.211" max="298.56" placeholder="e.g., 202.5" required>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-success btn-lg">
+          <i class="fas fa-magic"></i> Get Recommendation
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!--======================= Form Submission Loader ===============================-->
+  <div id="loaderOverlay">
+    <i class="fas fa-leaf"></i>
+    <p class="fw-bold text-success fs-4 mt-3">Analyzing soil conditions...</p>
+    <div class="progress-container">
+      <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+             role="progressbar" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!--======================= Main Result Card ===============================-->
+  {% if result %}
+  <div class="container my-5">
+    <div class="card result-card bg-success text-white">
+      <div class="card-body text-center p-4">
+        <h2 class="card-title mb-3">
+          <i class="fas fa-check-circle"></i> Recommended Crop
+        </h2>
+        <h1 class="display-3 fw-bold mb-3">{{ result }}</h1>
+        
+        <div class="confidence-badge bg-warning text-dark">
+          <i class="fas fa-chart-line"></i> Confidence: {{ confidence }}%
+        </div>
+        
+        <p class="mt-4 fs-5">
+          <i class="fas fa-info-circle"></i> This crop is best suited for your soil and climate conditions!
+        </p>
+      </div>
+    </div>
+
+    <!--======================= Crop Information ===============================-->
+    {% if crop_info %}
+    <div class="card mt-4 shadow">
+      <div class="card-header bg-success text-white">
+        <h4><i class="fas fa-book"></i> Detailed Crop Information</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="crop-info-item">
+              <strong><i class="fas fa-calendar"></i> Season:</strong> {{ crop_info.season }}
+            </div>
+            <div class="crop-info-item">
+              <strong><i class="fas fa-tint"></i> Water Needs:</strong> {{ crop_info.water_needs }}
+            </div>
+            <div class="crop-info-item">
+              <strong><i class="fas fa-mountain"></i> Soil Type:</strong> {{ crop_info.soil_type }}
+            </div>
+            <div class="crop-info-item">
+              <strong><i class="fas fa-thermometer-half"></i> Temperature:</strong> {{ crop_info.temperature }}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="crop-info-item">
+              <strong><i class="fas fa-clock"></i> Growing Period:</strong> {{ crop_info.growing_period }}
+            </div>
+            <div class="crop-info-item">
+              <strong><i class="fas fa-flask"></i> Fertilizer:</strong> {{ crop_info.fertilizer }}
+            </div>
+            <div class="crop-info-item">
+              <strong><i class="fas fa-rupee-sign"></i> Market Price:</strong> {{ crop_info.market_price }}
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 p-3 bg-light rounded">
+          <strong><i class="fas fa-file-alt"></i> Description:</strong>
+          <p class="mb-0 mt-2">{{ crop_info.description }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!--======================= Top 3 Recommendations ===============================-->
+    {% if top_3_crops %}
+    <div class="mt-5">
+      <h3 class="text-center mb-4">
+        <i class="fas fa-medal"></i> Top 3 Crop Recommendations
+      </h3>
+      <div class="top-3-container">
+        {% for crop in top_3_crops %}
+        <div class="card top-crop-card shadow position-relative">
+          <div class="rank-badge rank-{{ loop.index }}">{{ loop.index }}</div>
+          <div class="card-body">
+            <h5 class="card-title text-success">
+              <i class="fas fa-seedling"></i> {{ crop.name }}
+            </h5>
+            <div class="mb-3">
+              <span class="badge bg-success">{{ crop.confidence }}% Match</span>
+            </div>
+            <p class="card-text small">
+              <strong>Season:</strong> {{ crop.info.season }}<br>
+              <strong>Water:</strong> {{ crop.info.water_needs }}<br>
+              <strong>Soil:</strong> {{ crop.info.soil_type }}
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!--======================= Input Summary ===============================-->
+    {% if inputs %}
+    <div class="card mt-4 shadow">
+      <div class="card-header bg-info text-white">
+        <h5><i class="fas fa-table"></i> Your Input Parameters</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for key, value in inputs.items() %}
+          <div class="col-md-3 col-sm-6 mb-2">
+            <strong>{{ key }}:</strong> {{ value }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!--======================= Footer ===============================-->
+  <footer class="text-center py-4 mt-5 bg-success text-white">
+    <div class="container">
+      <p class="mb-0">
+        <i class="fas fa-leaf"></i> Crop Recommendation System - Powered by Machine Learning
+      </p>
+      <small>Helping farmers make data-driven decisions 🌾</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Site Loader
+    window.addEventListener('load', function() {
+      document.getElementById('sitePreloader').style.display = 'none';
+    });
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Form submission with loader
+    const form = document.getElementById('cropForm');
+    const loader = document.getElementById('loaderOverlay');
+
+    form.addEventListener('submit', function(e) {
+      loader.style.display = 'flex';
+    });
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const icon = document.getElementById('darkModeIcon');
+      if (document.body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    }
+
+    // Check for saved dark mode preference
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('darkModeIcon').classList.remove('fa-moon');
+      document.getElementById('darkModeIcon').classList.add('fa-sun');
+    }
+  </script>
+</body>
+</html>

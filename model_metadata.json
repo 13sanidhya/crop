@@ -1,0 +1,17 @@
+{
+    "model_name": "Ensemble (Voting Classifier)",
+    "accuracy": 0.9977272727272727,
+    "f1_score": 0.9954517027687759,
+    "training_samples": 1760,
+    "testing_samples": 440,
+    "features": [
+        "N",
+        "P",
+        "K",
+        "temperature",
+        "humidity",
+        "ph",
+        "rainfall"
+    ],
+    "best_params": null
+}

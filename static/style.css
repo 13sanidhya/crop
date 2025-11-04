@@ -1,0 +1,126 @@
+/* === Global Styles === */
+body {
+    background: linear-gradient(to right, #e3f9e5, #d4f1f4);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* === Navbar === */
+.navbar {
+    border-radius: 0 0 15px 15px;
+}
+
+/* === Headings === */
+h1 {
+    font-weight: bold;
+}
+
+/* === Form Elements === */
+.form-control {
+    border-radius: 12px;
+}
+
+.btn-lg {
+    border-radius: 12px;
+    padding: 12px 30px;
+}
+
+/* === Result Card === */
+.result-card {
+    margin: 30px auto;
+    border-radius: 20px;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease-in-out;
+}
+
+.result-card:hover {
+    transform: scale(1.03);
+}
+
+.card-img-top {
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 20px 20px 0 0;
+}
+/* Loader full screen */
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Plant growing animation */
+.plant-loader {
+  position: relative;
+  width: 50px;
+  height: 100px;
+}
+
+.stem {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 6px;
+  height: 0;
+  background: #28a745;
+  border-radius: 3px;
+  animation: grow-stem 2s forwards;
+}
+
+.leaf {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #28a745;
+  border-radius: 50% 50% 0 50%;
+  opacity: 0;
+}
+
+.leaf1 {
+  left: -20px;
+  bottom: 40px;
+  transform: rotate(-30deg);
+  animation: grow-leaf 1s forwards 1.2s;
+}
+
+.leaf2 {
+  right: -20px;
+  bottom: 60px;
+  transform: rotate(30deg);
+  animation: grow-leaf 1s forwards 1.5s;
+}
+
+@keyframes grow-stem {
+  from { height: 0; }
+  to { height: 80px; }
+}
+
+@keyframes grow-leaf {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.loader-text {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #28a745;
+  font-weight: bold;
+  animation: fade-text 2s infinite alternate;
+}
+
+@keyframes fade-text {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+
+/* Hide content until loader is finished */
+body.loaded #loader {
+  display: none;
+}
